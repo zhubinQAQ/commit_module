@@ -8,10 +8,6 @@ from albumentations.pytorch.transforms import ToTensorV2
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-
-from head import build_head
-from neck import build_neck
-from resnet import build_resnet
 from test_dataset import TestDataset, ImageClassifier
 
 
@@ -41,9 +37,13 @@ def get_augmentations():
     return valid_augmentations
 
 
-def main(model_root, csv_root, images_root, model_dict):
+def main(model_root, csv_root, images_root, model_dict, mode='test'):
     model = ImageClassifier(model_dict)
-    gt_dicts = get_gt(csv_root)
+    if mode == 'train':
+        gt_dicts = get_gt(csv_root)
+    else:
+        assert 'train' not in csv_root
+        assert 'train' not in images_root
     val_augs = get_augmentations()
 
     test_ds = TestDataset(images_root, transforms=val_augs)
@@ -60,13 +60,16 @@ def main(model_root, csv_root, images_root, model_dict):
         model.eval()
         output = model(x, img_metas=None)
         label = np.array(output).argmax(1)
-        for l, i in zip(label, batch['image']):
-            if l == gt_dicts[i]:
-                right += 1
-            else:
-                wrong += 1
         labels.extend(label)
-        print("right pre: {}/{} {} {:.5f}".format(right, right + wrong, len(labels), float(right) / (right + wrong)))
+
+        if mode == 'train':
+            for l, i in zip(label, batch['image']):
+                if l == gt_dicts[i]:
+                    right += 1
+                else:
+                    wrong += 1
+            print("right pre: {}/{} {} {:.5f}".format(right, right + wrong, len(labels), float(right) / (right + wrong)))
+    return labels
 
 
 def run(model_root, csv_root, images_root, model_dict):
