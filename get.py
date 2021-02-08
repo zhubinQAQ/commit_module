@@ -12,24 +12,7 @@ from torch.utils.data import Dataset, DataLoader
 from head import build_head
 from neck import build_neck
 from resnet import build_resnet
-from test_dataset import TestDataset
-
-model_root = "/home/zhubin/data/mmclassification/work_dirs/resnetv1d152_b32x8_leaf/epoch_100.pth"
-csv_root = "/home/zhubin/data/mmclassification/data/leaf/train.csv"
-images_root = "/home/zhubin/data/mmclassification/data/leaf/train_images/"
-model_dict = dict(
-    model_type="ResNetV1d",
-    backbone=dict(
-        depth=152,
-        num_stages=4,
-        out_indices=(3,), ),
-    neck=dict(type='GlobalAveragePooling'),
-    head=dict(
-        num_classes=5,
-        in_channels=2048,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-        topk=(1, 5),
-    ))
+from test_dataset import TestDataset, ImageClassifier
 
 
 def get_gt(root):
@@ -58,7 +41,7 @@ def get_augmentations():
     return valid_augmentations
 
 
-if __name__ == "__main__":
+def main(model_root, csv_root, images_root, model_dict):
     model = ImageClassifier(model_dict)
     gt_dicts = get_gt(csv_root)
     val_augs = get_augmentations()
@@ -84,3 +67,27 @@ if __name__ == "__main__":
                 wrong += 1
         labels.extend(label)
         print("right pre: {}/{} {} {:.5f}".format(right, right + wrong, len(labels), float(right) / (right + wrong)))
+
+
+def run(model_root, csv_root, images_root, model_dict):
+    return main(model_root, csv_root, images_root, model_dict)
+
+
+if __name__ == "__main__":
+    model_root = "/home/zhubin/data/mmclassification/work_dirs/resnetv1d152_b32x8_leaf/epoch_100.pth"
+    csv_root = "/home/zhubin/data/mmclassification/data/leaf/train.csv"
+    images_root = "/home/zhubin/data/mmclassification/data/leaf/train_images/"
+    model_dict = dict(
+        model_type="ResNetV1d",
+        backbone=dict(
+            depth=152,
+            num_stages=4,
+            out_indices=(3,), ),
+        neck=dict(type='GlobalAveragePooling'),
+        head=dict(
+            num_classes=5,
+            in_channels=2048,
+            loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+            topk=(1, 5),
+        ))
+    main(model_root, csv_root, images_root, model_dict)
