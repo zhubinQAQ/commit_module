@@ -39,6 +39,7 @@ def get_augmentations():
 
 def main(model_root, csv_root, images_root, model_dict, mode='test'):
     model = ImageClassifier(model_dict)
+    print('=========[{}]========'.format(mode))
     if mode == 'train':
         gt_dicts = get_gt(csv_root)
     else:
