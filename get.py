@@ -39,12 +39,10 @@ def get_augmentations():
 
 def main(model_root, csv_root, images_root, model_dict, mode='test'):
     model = ImageClassifier(model_dict)
+    # print(model)
     print('=========[{}]========'.format(mode))
     if mode == 'train':
         gt_dicts = get_gt(csv_root)
-    else:
-        assert 'train' not in csv_root
-        assert 'train' not in images_root
     val_augs = get_augmentations()
 
     test_ds = TestDataset(images_root, transforms=val_augs)
@@ -62,7 +60,6 @@ def main(model_root, csv_root, images_root, model_dict, mode='test'):
         output = model(x, img_metas=None)
         label = np.array(output).argmax(1)
         labels.extend(label)
-
         if mode == 'train':
             for l, i in zip(label, batch['image']):
                 if l == gt_dicts[i]:
@@ -78,9 +75,10 @@ def run(model_root, csv_root, images_root, model_dict):
 
 
 if __name__ == "__main__":
-    model_root = "/home/zhubin/data/mmclassification/work_dirs/resnetv1d152_b32x8_leaf/epoch_100.pth"
-    csv_root = "/home/zhubin/data/mmclassification/data/leaf/train.csv"
-    images_root = "/home/zhubin/data/mmclassification/data/leaf/train_images/"
+    mode = 'train'
+    model_root = "/home/user/workspace/lhz/leafdata/cls/work_dirs/resnetv1d152_b32x8_leaf_140e/epoch_58.pth"
+    csv_root = "/home/user/workspace/lhz/leafdata/cls/data/leaf/train.csv"
+    images_root = "/home/user/workspace/lhz/leafdata/cls/data/leaf/{}_images".format(mode)
     model_dict = dict(
         model_type="ResNetV1d",
         backbone=dict(
@@ -94,4 +92,4 @@ if __name__ == "__main__":
             loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
             topk=(1, 5),
         ))
-    main(model_root, csv_root, images_root, model_dict)
+    main(model_root, csv_root, images_root, model_dict, mode)

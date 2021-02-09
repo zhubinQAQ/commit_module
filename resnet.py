@@ -521,7 +521,7 @@ class ResNet(nn.Module):
                 ConvModule(stem_channels // 2,
                            stem_channels,
                            kernel_size=3,
-                           stride=2,
+                           stride=1,
                            padding=1, ),
             )
 
